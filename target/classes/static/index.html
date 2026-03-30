@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple UI</title>
+</head>
+<body>
+<h2>Create User</h2>
+
+<input id="name" placeholder="Name"/>
+<input id="email" placeholder="Email"/>
+<button onclick="createUser()">Submit</button>
+
+<h2>Users</h2>
+<button onclick="loadUsers()">Load Users</button>
+<ul id="list"></ul>
+
+<script>
+    async function createUser() {
+        await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value
+            })
+        });
+    }
+
+    async function loadUsers() {
+        const res = await fetch('/api/users');
+        const users = await res.json();
+
+        const list = document.getElementById('list');
+        list.innerHTML = '';
+
+        users.forEach(u => {
+            const li = document.createElement('li');
+            li.innerText = u.name + " - " + u.email;
+            list.appendChild(li);
+        });
+    }
+</script>
+</body>
+</html>

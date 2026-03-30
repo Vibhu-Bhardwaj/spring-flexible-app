@@ -1,0 +1,8 @@
+D:\spring-flexible-app\src\main\java\com\example\app\dto\UserRequestDTO.java
+D:\spring-flexible-app\src\main\java\com\example\app\dto\UserResponseDTO.java
+D:\spring-flexible-app\src\main\java\com\example\app\entity\User.java
+D:\spring-flexible-app\src\main\java\com\example\app\exception\GlobalExceptionHandler.java
+D:\spring-flexible-app\src\main\java\com\example\app\controller\UserController.java
+D:\spring-flexible-app\src\main\java\com\example\app\service\UserService.java
+D:\spring-flexible-app\src\main\java\com\example\app\AppApplication.java
+D:\spring-flexible-app\src\main\java\com\example\app\repository\UserRepository.java
