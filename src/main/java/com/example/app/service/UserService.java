@@ -3,6 +3,8 @@ package com.example.app.service;
 import com.example.app.dto.UserRequestDTO;
 import com.example.app.dto.UserResponseDTO;
 import com.example.app.entity.User;
+import com.example.app.event.UserEvent;
+import com.example.app.kafka.UserProducer;
 import com.example.app.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,18 +21,17 @@ public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
+    private final UserProducer userProducer;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, UserProducer userProducer) {
         this.userRepository = userRepository;
+        this.userProducer = userProducer;
     }
 
-    /**
-     * CREATE USER → CLEAR CACHE
-     */
     @CacheEvict(value = "users", allEntries = true)
     public UserResponseDTO save(UserRequestDTO dto) {
 
-        log.info("Saving user and clearing cache. Email: {}", dto.getEmail());
+        log.info("Saving user and sending event");
 
         User user = new User();
         user.setName(dto.getName());
@@ -38,18 +39,17 @@ public class UserService {
 
         User saved = userRepository.save(user);
 
-        log.info("User created with ID: {}", saved.getId());
+        // 🔥 SEND EVENT TO KAFKA
+        UserEvent event = new UserEvent(saved.getName(), saved.getEmail());
+        userProducer.sendUserEvent(event);
 
         return mapToResponse(saved);
     }
 
-    /**
-     * GET ALL USERS → CACHE RESULT
-     */
     @Cacheable(value = "users")
     public List<UserResponseDTO> getAll() {
 
-        log.info("Fetching users from DB (cache miss)");
+        log.info("Fetching users from DB");
 
         return userRepository.findAll()
                 .stream()
@@ -57,9 +57,6 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * MAPPER METHOD
-     */
     private UserResponseDTO mapToResponse(User user) {
         return UserResponseDTO.builder()
                 .id(user.getId())
