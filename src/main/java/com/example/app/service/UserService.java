@@ -6,6 +6,8 @@ import com.example.app.entity.User;
 import com.example.app.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,9 +24,13 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * CREATE USER → CLEAR CACHE
+     */
+    @CacheEvict(value = "users", allEntries = true)
     public UserResponseDTO save(UserRequestDTO dto) {
 
-        log.info("Creating user with email: {}", dto.getEmail());
+        log.info("Saving user and clearing cache. Email: {}", dto.getEmail());
 
         User user = new User();
         user.setName(dto.getName());
@@ -37,9 +43,13 @@ public class UserService {
         return mapToResponse(saved);
     }
 
+    /**
+     * GET ALL USERS → CACHE RESULT
+     */
+    @Cacheable(value = "users")
     public List<UserResponseDTO> getAll() {
 
-        log.info("Fetching all users");
+        log.info("Fetching users from DB (cache miss)");
 
         return userRepository.findAll()
                 .stream()
@@ -47,6 +57,9 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * MAPPER METHOD
+     */
     private UserResponseDTO mapToResponse(User user) {
         return UserResponseDTO.builder()
                 .id(user.getId())
